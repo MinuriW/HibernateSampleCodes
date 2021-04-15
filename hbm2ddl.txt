@@ -1,0 +1,16 @@
+hibernate.hbm2ddl.auto
+------------------------------
+This property can have one of the four values:
+1. create
+2. update
+3. validate
+4. create-drop
+
+create - Create the schema.The data previously present (if there) in the schema is lost.
+update - update the schema with the given values.And, if schema is not present in the DB then the schema is created.
+validate- validate the schema. It makes no change in the DB. i.e. If schema is not present in DB, it is not created.And,           it will throw an error - table not  found:<table_name>
+create-drop - creates the schema with destroying the data previously present(if there).                 It also drops the database schema when the SessionFactory is closed.
+              Remember schema is not dropped on closing the session. It drops only on closing the SessionFactory.
+NB## In case if you give any other value to this property(like abc) or it is just left blank. It shows following behaviour:
+    -If schema is not present in the DB-creates the schema
+    -If schema is present in the DB - updates the schema.

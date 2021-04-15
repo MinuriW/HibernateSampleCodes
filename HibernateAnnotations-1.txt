@@ -1,0 +1,80 @@
+Hibernate Annotations
+------------------------------------------------------------------------------------------
+@Entity
+Annotate all your entity beans with @Entity. 
+
+@Entity
+public class Company implements Serializable {
+...
+}
+------------------------------------------------------------------------------------------
+
+@Table
+Specify the database table this Entity maps to using the name attribute of @Table annotation. In the example below, the data will be stored in 'company' table in the database. 
+
+@Entity
+@Table(name = "company")
+public class Company implements Serializable {
+...
+}
+------------------------------------------------------------------------------------------
+
+@Column
+Specify the column mapping using @Column annotation.
+
+@Entity
+@Table(name = "company")
+public class Company implements Serializable {
+ 
+  @Column(name = "name")
+  private String name;
+   
+...
+}
+------------------------------------------------------------------------------------------
+@Id
+Annotate the id column using @Id.
+
+@Entity
+@Table(name = "company")
+public class Company implements Serializable {
+ 
+  @Id
+  @Column(name = "id")
+  private int id;
+   
+...
+}
+------------------------------------------------------------------------------------------
+@GeneratedValue
+Let database generate (auto-increment) the id column.
+
+@Entity
+@Table(name = "company")
+public class Company implements Serializable {
+ 
+  @Id
+  @Column(name = "id")
+  @GeneratedValue
+  private int id;
+   
+...
+}
+------------------------------------------------------------------------------------------
+
+@Temporal
+
+The temporal data is the data related to time.
+@Temporal is a JPA annotation that converts back and forth between timestamp and java.util.Date. It also converts time-stamp into time. For example, in the snippet below, @Temporal(TemporalType.DATE) drops the time value and only preserves the date.
+
+@Temporal(TemporalType.DATE)
+private java.util.Date creationDate;
+
+other values for this annotation:
+@Temporal(TemporalType.TIMESTAMP)
+@Temporal(TemporalType.TIME)
+
+------------------------------------------------------------------------------------------
+
+
+

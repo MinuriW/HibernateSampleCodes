@@ -1,0 +1,186 @@
+Date:5th July 2017 
+HQL-Hibernate Query Language
+It is Object Oriented Query Language. We query entity classes not tables.
+Here are the steps to execute HQL in hibernate:
+
+        String hql="your query here";
+	Create a Query from the Session:
+	Query query = session.createQuery(hql);
+
+Execute the query: depending on the type of the query (listing or update), an appropriate method is used:
+	For a listing query (SELECT):
+	List listResult = query.list();
+
+	For an update query (INSERT, UPDATE, DELETE):
+	int rowsAffected = query.executeUpdate();
+
+Extract result returned from the query: depending of the type of the query, Hibernate returns different type of result set. For example:
+	1. Select query on a mapped object returns a list of those objects.
+        2. Join query returns a list of arrays of Objects which are aggregate of columns of the joined tables. This also applies for queries using aggregate functions (count, sum, avg, etc).
+
+
+1. List Query Example
+------------------------------------------------
+String hql = "from Scholar";
+Query query = session.createQuery(hql);
+List<Scholar> list = query.list();
+ 
+for (Scholar scholar : list) {
+    System.out.println(scholar.getName());
+}
+------------------------------------------------
+
+2. Search Query Example
+-------------------------------------------------------------------
+The following statements execute a query that searches for all Scholars in table whose name is ‘Raman’:
+String hql = "from Scholar where name= 'Raman'";
+Query query = session.createQuery(hql);
+List<Scholar> list = query.list();
+ 
+for (Scholar s : list) {
+    System.out.println(s.getName());
+}
+-------------------------------------------------------------------
+
+3. Using Named Parameters Example
+-------------------------------------------------------------------
+You can parameterize your query using a colon before parameter name, for example :id indicates a placeholder for a parameter named id. The following example demonstrates how to write and execute a query using named parameters:
+
+String hql = "from Employee where city like :city";
+String keyword = "pur";
+Query query = session.createQuery(hql);
+query.setParameter("city", "%" + keyword + "%");
+ 
+List<Employee> list = query.list();
+ 
+for (Employee emp : list) {
+    System.out.println(emp.getName());
+}
+
+The above HQL searches for all employees whose city contains the specified keyword:
+-------------------------------------------------------------------
+
+4. Insert - Select Query Example
+-------------------------------------------------------------------
+HQL doesn’t support regular INSERT statement (you know why - because the session.save(Object) method does it perfectly). So we can only write INSERT … SELECT query in HQL. The following code snippet executes a query that inserts all rows from Category table to OldCategory table:
+
+String hql = "insert into Category (id, name)"
+        + " select id, name from OldCategory";
+Query query = session.createQuery(hql);
+int rowsAffected = query.executeUpdate();
+if (rowsAffected > 0) {
+    System.out.println(rowsAffected + "(s) were inserted");
+}
+Note that HQL is object-oriented, so Category and OldCategory must be mapped class names (not real table names).
+-------------------------------------------------------------------
+
+5. Update Query Example
+-------------------------------------------------------------------
+The UPDATE query is similar to SQL. The following example runs a query that updates city for a specific employee:
+
+String hql = "update Employee set city = :city where id = :id";
+Query query = session.createQuery(hql);
+query.setParameter("city", "Chennai");
+query.setParameter("id", 1021);
+ 
+int rowsAffected = query.executeUpdate();
+if (rowsAffected > 0) {
+    System.out.println("Updated " + rowsAffected + " rows.");
+}
+-------------------------------------------------------------------
+
+6. Delete Query Example
+-------------------------------------------------------------------
+Using DELETE query in HQL is also straightforward. For example:
+
+String hql = "delete from Employee where id = :empId";
+Query query = session.createQuery(hql);
+query.setParameter("empId", 1011);
+ 
+int rowsAffected = query.executeUpdate();
+if (rowsAffected > 0) {
+    System.out.println("Deleted " + rowsAffected + " rows.");
+}
+-------------------------------------------------------------------
+
+7. Sort Query Example
+-------------------------------------------------------------------
+Sorting in HQL is very similar to SQL using ORDER BY clause follows by a sort direction ASC (ascending) or DESC(descending). For example:
+  String hql = "from Product order by price ASC";
+ 
+  Query query = session.createQuery(hql);
+  List<Product> listProducts = query.list();
+ for (Product aProduct : listProducts) {
+    System.out.println(aProduct.getName() + "\t - " + aProduct.getPrice());
+   }
+That lists all products by the ascending order of price.
+-------------------------------------------------------------------
+
+8. Group By Query Example
+-------------------------------------------------------------------
+Using GROUP BY clause in HQL is similar to SQL. The following query summarizes price of all products grouped by each category:
+select sum(p.price), p.category.name from Product p group by category
+
+And here is the code snippet:
+	String hql = "select sum(p.price), p.category.name from Product p group by category";
+        Query query = session.createQuery(hql);
+        List<Object[]> listResult = query.list();
+ 
+        for (Object[] aRow : listResult) {
+             Double sum = (Double) aRow[0];
+            String category = (String) aRow[1];
+            System.out.println(category + " - " + sum);
+         }
+-------------------------------------------------------------------
+
+9. Date Range Query Example
+-------------------------------------------------------------------
+A nice feature of Hibernate is that it is able to defer parameter type to generate the resulting SQL statement accordingly. So using date time parameters in HQL is quick and easy, for example:
+
+String hql = "from Order where purchaseDate >= :beginDate and purchaseDate <= :endDate";
+Query query = session.createQuery(hql);
+ SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
+ Date beginDate = dateFormatter.parse("2014-11-01");
+ query.setParameter("beginDate", beginDate);
+ 
+ Date endDate = dateFormatter.parse("2014-11-22");
+ query.setParameter("endDate", endDate);
+ 
+  List<Order> listOrders = query.list();
+ 
+ for (Order anOrder : listOrders) {
+    System.out.println(anOrder.getProduct().getName() + " - "
+            +  anOrder.getAmount() + " - "
+            + anOrder.getPurchaseDate());
+  }
+The above query lists only orders whose purchase date is in a specified range.
+-------------------------------------------------------------------
+
+10. Using Expressions in Query
+For expressions used in the WHERE clause, HQL supports all basic arithmetic expressions similar to SQL include the following:
+•	mathematical operators: +, -, *, /
+•	binary comparison operators: =, >=, <=, <>, !=, like
+•	logical operators: and, or, not
+•	etc
+For a complete list of expressions supported by Hibernate, click here.
+For example, the following query returns only products with price is ranging from 500 to 1000 dollars:
+1	from Product where price >= 500 and price <= 1000
+-------------------------------------------------------------------
+
+11. Using Aggregate Functions in Query
+-------------------------------------------------------------------
+HQL supports the following aggregate functions:
+•	avg(…), sum(…), min(…), max(…)
+•	count(*)
+•	count(…), count(distinct…), count(all…)
+For example, the following query counts all products:
+1	select count(name) from Product
+And here’s the code snippet that shows how to extract the result:
+
+	String hql = "select count(name) from Product";
+        Query query = session.createQuery(hql);
+        List listResult = query.list();
+        Number number = (Number) listResult.get(0);
+        System.out.println(number.intValue());
+
+

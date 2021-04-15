@@ -1,0 +1,90 @@
+Hibernate Named Query
+------------------------------------------------------------------
+Hibernate provides Named Query that we can define at a central location and use them anywhere in the code. We can created named queries for both HQL and Native SQL.
+
+Hibernate Named Query can be defined in Hibernate mapping files or through the use of JPA annotations @NamedQuery and @NamedNativeQuery. Today we will look into both of them and how to use hibernate named query in a simple application.
+
+Hibernate Named Query XML
+----------------------------------
+We have a hibernate mapping file, that contains only HQL named queries and Native SQL named queries.
+
+named-queries.hbm.xml
+
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+	"http://hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+	
+<hibernate-mapping>
+	<query name="HQL_GET_ALL_EMPLOYEE">from Employee</query>
+
+	<query name="HQL_GET_EMPLOYEE_BY_ID">
+		<![CDATA[from Employee where emp_id = :id]]>
+	</query>
+
+	<query name="HQL_GET_EMPLOYEE_BY_SALARY">
+		<![CDATA[from Employee where emp_salary > :salary]]>
+	</query>
+	
+	<sql-query name="SQL_GET_ALL_EMPLOYEE">
+		<![CDATA[select emp_id, emp_name, emp_salary from Employee]]>
+	</sql-query>
+	
+	<sql-query name="SQL_GET_ALL_EMP_ADDRESS">
+		<![CDATA[select {e.*}, {a.*} from Employee e join Address a ON e.emp_id=a.emp_id]]>
+		<return alias="e" class="com.journaldev.hibernate.model.Employee" />
+		<return-join alias="a" property="e.address"></return-join>
+	</sql-query>
+</hibernate-mapping>
+
+query element is used for HQL named queries and sql-query element is used for native sql named queries. We can use return element for declaring the entity to which resultset will be mapped. return-join is used when we have join of multiple tables.
+
+We should use CDATA to declare our hibernate named query to make sure it’s treated as data, otherwise < and > sings will mess up our mapping XML file.
+
+Hibernate Named Query @NamedQuery Annotation
+--------------------------------------------------
+We have two model classes – Employee and Address. We have defined names queries in Address class as below.
+
+
+@Entity
+@Table(name = "ADDRESS")
+@NamedQueries({ @NamedQuery(name = "@HQL_GET_ALL_ADDRESS", 
+			query = "from Address") })
+@NamedNativeQueries({ @NamedNativeQuery(name = "@SQL_GET_ALL_ADDRESS", 
+			query = "select emp_id, address_line1, city, zipcode from Address") })
+public class Address { }
+
+
+=======Client Program===
+
+SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
+		Session session = sessionFactory.getCurrentSession();
+		Transaction tx = session.beginTransaction();
+
+		//HQL Named Query Example
+		Query query = session.getNamedQuery("@HQL_GET_ALL_EMPLOYEE");
+		List<Employee> empList = query.list();
+		for (Employee emp : empList) {
+			System.out.println("List of Employees::" + emp.getId() + ","
+					+ emp.getAddress().getCity());
+		}
+
+		query = session.getNamedQuery("HQL_GET_EMPLOYEE_BY_ID");
+		query.setInteger("id", 2);
+		Employee emp = (Employee) query.uniqueResult();
+		System.out.println("Employee Name=" + emp.getName() + ", City="
+				+ emp.getAddress().getCity());
+
+		query = session.getNamedQuery("HQL_GET_EMPLOYEE_BY_SALARY");
+		query.setInteger("salary", 200);
+		empList = query.list();
+		for (Employee emp1 : empList) {
+			System.out.println("List of Employees::" + emp1.getId() + ","
+					+ emp1.getSalary());
+		}
+
+Hibernate Named Query Important Points
+
+-Hibernate Named Query helps us in grouping queries at a central location rather than letting them scattered all over the code.
+-Hibernate Named Query syntax is checked when the hibernate session factory is created, thus making the application fail fast in case of  any error in the named queries.
+-Hibernate Named Query is global, means once defined it can be used throughout the application.
+-One of the major disadvantage of Named query is that it’s hard to debug, because we need to find out the location where it’s defined.

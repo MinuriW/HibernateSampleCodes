@@ -1,0 +1,12 @@
+A new instance of a a persistent class which is not associated with a Session, has no representation in the database and no identifier value is considered transient by Hibernate:
+
+Person person = new Person();
+person.setName("Nidhi");
+// person is in a transient state
+
+A persistent instance has a representation in the database, an identifier value and is associated with a Session. You can make a transient instance persistent by associating it with a Session:
+
+Long id = (Long) session.save(person);
+// person is now in a persistent state
+
+Now, if we close the Hibernate Session, the persistent instance will become a detached instance: it isn't attached to a Session anymore (but can still be modified and reattached to a new Session later though).

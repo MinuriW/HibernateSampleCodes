@@ -1,0 +1,42 @@
+ID Generation Strategies 
+------------------------------
+Hibernate provides various identifier generation strategies using annotations.When the ID generation strategy is not set it employs an AUTO strategy. 
+When the strategy is AUTO, Hibernate relies on our database to generate primary keys. For example, if we have defined a primary key with the AUTO_INCREMENT option in MySQL, Hibernate uses that option accordingly. 
+
+We can set up different strategies depending on our requirements. All we need to do is add @GeneratedValue annotation to the id variable. This annotation accepts two attributes: strategy and generator. 
+The strategy attribute indicates the type of identifier generation that we would like to use, while generator defines the methods to generate the identifiers. The following code snippet uses the IDENTITY strategy for its ID generation:
+
+@Entity(name = "TBL_EMPLOYEE") 
+public class Employee
+ {
+   @Id
+   @Column(name="ID")
+   @GeneratedValue(strategy = GenerationType.IDENTITY)
+     private int employeeId =0;    
+     ...
+     }
+  Notice that for the IDENTITY strategy, we have to provide the generator method, as this   depends upon the identity function provided by the database. The identity function is   supported by a few databases, including MySQL, Sybase, and DB2
+
+   The strategy should be the GeneratorType value, as described in the following:
+
+ GeneratorType.AUTO This is the default strategy and is portable across different  databases. Hibernate chooses the appropriate ID based on the database.
+
+ GeneratorType.IDENTITY This setting is based on the identity provided by some databases;  it is the responsibility of the database to provide a unique identifier.
+
+  GeneratorType.SEQUENCE Some databases provide a mechanism of sequenced numbers, so this   setting will let Hibernate use the sequence number.
+
+  GeneratorType.TABLE Sometimes the primary keys have been created from a unique column   in another table. In this case, use the TABLE generator. 
+
+   For employing a sequence strategy, you must define both the strategy and the sequence    generator:
+
+public class Employee
+  {
+    @Id
+    @Column(name="EMPLOYEE_ID")
+    @GeneratedValue (strategy= GenerationType.SEQUENCE, generator="empSeqGen")
+    @SequenceGenerator(name = "empSeqGen", sequenceName = "EMP_SEQ_GEN")  
+    private int employeeId =0;
+   ...
+  }
+
+
